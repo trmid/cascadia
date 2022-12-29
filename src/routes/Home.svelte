@@ -1,4 +1,7 @@
-<h1>Home</h1>
-<p>
-	Cascadia: <a href="https://github.com/trmid/cascadia">Public Template Repository</a>
-</p>
+<script>
+  import Scorecard from "../components/Scorecard.svelte";
+</script>
+
+<h1>Cascadia Scorecard</h1>
+
+<Scorecard />
