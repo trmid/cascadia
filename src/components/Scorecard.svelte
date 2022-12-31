@@ -3,7 +3,7 @@
   import Rotator from "./Rotator.svelte";
   import Token, { WILDLIFE, HABITAT, Habitat, Wildlife, isHabitat, isWildlife } from "./Token.svelte";
 
-  let players: Player[] = [createPlayer(), createPlayer(), createPlayer(), createPlayer()];
+  let players: Player[] = [createPlayer(), createPlayer()];
   let rows: (Habitat | Wildlife | 'nature_token')[] = [...WILDLIFE, ...HABITAT, 'nature_token'];
   let playerIndex = 0;
   let row = 0;
@@ -50,15 +50,29 @@
       }
       if(largest > 0) {
         const withMax = players.filter(x => x.points.habitat[habitat] == largest);
-        if(withMax.length > 2) {
-          withMax.forEach(player => player.points.habitatBonus[habitat] = 1);
-        } else if(withMax.length > 1) {
-          withMax.forEach(player => player.points.habitatBonus[habitat] = 2);
-        } else {
-          withMax[0].points.habitatBonus[habitat] = 3;
-          const withSecondMax = players.filter(x => x.points.habitat[habitat] == secondLargest);
-          if(withSecondMax.length == 1) {
-            withSecondMax[0].points.habitatBonus[habitat] = 1;
+
+        // 3 or 4 players:
+        if(players.length > 2) {
+          if(withMax.length > 2) {
+            withMax.forEach(player => player.points.habitatBonus[habitat] = 1);
+          } else if(withMax.length > 1) {
+            withMax.forEach(player => player.points.habitatBonus[habitat] = 2);
+          } else {
+            withMax[0].points.habitatBonus[habitat] = 3;
+            const withSecondMax = players.filter(x => x.points.habitat[habitat] == secondLargest);
+            if(withSecondMax.length == 1) {
+              withSecondMax[0].points.habitatBonus[habitat] = 1;
+            }
+          }
+        } else if (players.length == 2) {
+          if(withMax.length == 2) {
+            withMax.forEach(player => player.points.habitatBonus[habitat] = 1);
+          } else {
+            withMax[0].points.habitatBonus[habitat] = 2;
+          }
+        } else if (players.length == 1) {
+          if(largest >= 7) {
+            withMax[0].points.habitatBonus[habitat] = 2;
           }
         }
       }
@@ -66,6 +80,22 @@
   };
 
   $: players, calculateBonus();
+
+  const removePlayer = (i: number) => {
+    if(i == 0) {
+      players = players.slice(1);
+    } else if (i == players.length - 1) {
+      players = players.slice(0, players.length - 1);
+    } else {
+      players = players.slice(0, i).concat(players.slice(i + 1));
+    }
+  };
+
+  const addPlayer = () => {
+    if(players.length < 4) {
+      players = [...players, createPlayer()];
+    }
+  };
 </script>
 
 <div id="container">
@@ -97,6 +127,24 @@
   {:else}
     <table>
       <tbody>
+
+        <!-- Add / Remove Player -->
+        <tr>
+          <th>{players.length} / 4</th>
+          {#each (new Array(Math.min(4, players.length + 1))).fill(0) as _, i}
+            <th>
+              {#if i < players.length}
+                <button on:click={() => removePlayer(i)} disabled={players.length <= 1}>
+                  <i class="icofont-bin"></i>
+                </button>
+              {:else}
+                <button on:click={addPlayer}>
+                  <i class="icofont-ui-add"></i>
+                </button>
+              {/if}
+            </th>
+          {/each}
+        </tr>
 
         <!-- Names -->
         <tr>
