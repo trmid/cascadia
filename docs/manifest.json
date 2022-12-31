@@ -1,0 +1,19 @@
+{
+  "name": "Cascadia Scorecard",
+  "short_name": "Cascadia Scorecard",
+  "lang": "en-US",
+  "start_url": "./",
+  "display": "fullscreen",
+  "background_color": "#eee",
+  "theme_color": "white",
+  "orientation": "natural",
+  "categories": ["utilities", "productivity", "gaming"],
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "452x452",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
