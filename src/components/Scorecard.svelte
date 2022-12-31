@@ -44,6 +44,8 @@
         if(size > largest) {
           secondLargest = largest;
           largest = size;
+        } else if(size > secondLargest) {
+          secondLargest = size;
         }
       }
       if(largest > 0) {
