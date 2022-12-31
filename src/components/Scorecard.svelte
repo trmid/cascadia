@@ -131,7 +131,7 @@
         <!-- Total -->
         <tr>
           <th>
-            Total
+            <div style="height:48px;display:flex;align-items:center;justify-content:center;">Total</div>
           </th>
           {#each players as player}
             <td>
@@ -167,7 +167,7 @@
     border-collapse: collapse;
   }
   td, th {
-    padding: 0.5rem;
+    padding: 6px;
     text-align: center;
   }
   .icon {
@@ -185,7 +185,12 @@
   input.name,
   button.edit,
   .total {
-    width: 64px;
+    width: 96px;
+    height: 48px;
+    box-sizing: border-box;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
     border-radius: 12px;
     padding: 6px 12px;
     border: 1px solid #222;
@@ -200,5 +205,19 @@
   }
   .point-input {
     width: 64px;
+    border-radius: 12px;
+  }
+
+  @media screen and (max-width: 720px) {
+    input.name,
+    button.edit,
+    .total {
+      width: 64px;
+      padding: 6px;
+    }
+
+    th,td {
+      padding: 3px;
+    }
   }
 </style>
