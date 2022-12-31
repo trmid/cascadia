@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="description" content="">
-  <meta name="color-scheme" content="dark light">
+  <meta name="color-scheme" content="light">
 
   <title>Cascadia</title>
 
@@ -39,6 +39,26 @@
   <style>
     html,body {
       font-family: sans-serif;
+      min-height: 100vh;
+      color: #222;
+    }
+    html {
+      background-color: #22f;
+      background-image: url(assets/hexagons.png);
+      background-position: center center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      background-size: cover;
+    }
+    body {
+      backdrop-filter: saturate(0.5);
+    }
+    button, input {
+      padding: 12px 24px;
+      border-radius: 12px;
+      border: 1px solid #222;
+      font-size: 16px;
+      cursor: pointer;
     }
   </style>
 </head>

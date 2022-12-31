@@ -1,8 +1,38 @@
 <script type="ts">
   import { Player, createPlayer, total } from "./Player.svelte";
-  import Token, { WILDLIFE, HABITAT } from "./Token.svelte";
+  import Rotator from "./Rotator.svelte";
+  import Token, { WILDLIFE, HABITAT, Habitat, Wildlife, isHabitat, isWildlife } from "./Token.svelte";
 
   let players: Player[] = [createPlayer(), createPlayer(), createPlayer(), createPlayer()];
+  let rows: (Habitat | Wildlife | 'nature_token')[] = [...WILDLIFE, ...HABITAT, 'nature_token'];
+  let playerIndex = 0;
+  let row = 0;
+  let editing = false;
+  let pointInput: HTMLInputElement | null = null;
+
+  $: currentRow = rows[row];
+  $: (row || 1) && (playerIndex || 1) && pointInput && focusInput();
+  $: pointInput?.addEventListener("keypress", e => { if(e.key === "Enter") { e.preventDefault(); cycle(); } });
+
+  const focusInput = () => {
+    setTimeout(() => {
+      pointInput?.focus();
+      pointInput?.select();
+    }, 0);
+  };
+
+  const cycle = () => {
+    if(++row >= rows.length) {
+      row = 0;
+      if(++playerIndex >= players.length) playerIndex = 0;
+    }
+  };
+
+  const edit = (_playerIndex: number, _row: number) => {
+    playerIndex = _playerIndex;
+    row = _row;
+    editing = true;
+  };
 
   const calculateBonus = () => {
     for(const habitat of HABITAT) {
@@ -36,86 +66,113 @@
   $: players, calculateBonus();
 </script>
 
-<table>
-  <tbody>
+<div id="container">
+  {#if editing}
+    {#if currentRow === rows[row]}
+      <div id="editor">
+        <button on:click={() => editing = false}><i class="icofont-arrow-left"></i> Back</button>
+        <Rotator bind:i={playerIndex} min={0} max={players.length - 1}>
+          {players[playerIndex].name ? players[playerIndex].name : `Player ${playerIndex + 1}`}
+        </Rotator>
+        <Rotator bind:i={row} min={0} max={rows.length - 1}>
+          <div class="row-name">
+            <Token type={rows[row]} /> {rows[row] === 'nature_token' ? 'Nature Token' : rows[row].charAt(0).toUpperCase() + rows[row].slice(1)}
+          </div>
+        </Rotator>
+        <br>
+        <span>
+          Points:
+          {#if isHabitat(currentRow)}
+            <input type="number" bind:this={pointInput} class="point-input" bind:value={players[playerIndex].points.habitat[currentRow]}>
+          {:else if isWildlife(currentRow)}
+            <input type="number" bind:this={pointInput} class="point-input" bind:value={players[playerIndex].points.wildlife[currentRow]}>
+          {:else}
+            <input type="number" bind:this={pointInput} class="point-input" bind:value={players[playerIndex].points.natureTokens}>
+          {/if}
+        </span>
+      </div>
+    {/if}
+  {:else}
+    <table>
+      <tbody>
 
-    <!-- Names -->
-    <tr>
-      <th class="icon"><i class="icofont-user-alt-6"></i></th>
-      {#each players as _, i}
-        <th>
-          <input class="name" type="text" bind:value={players[i].name} placeholder="Player {i + 1} Name">
-        </th>
-      {/each}
-    </tr>
+        <!-- Names -->
+        <tr>
+          <th class="icon"><i class="icofont-user-alt-6"></i></th>
+          {#each players as _, i}
+            <th>
+              <input class="name" type="text" bind:value={players[i].name} placeholder="Player {i + 1}">
+            </th>
+          {/each}
+        </tr>
 
-    <!-- Wildlife -->
-    {#each WILDLIFE as wildlife}
-      <tr>
-        <th>
-          <Token type={wildlife} />
-        </th>
-        {#each players as _, i}
-          <td>
-            <input type="number" bind:value={players[i].points.wildlife[wildlife]}>
-          </td>
+        <!-- Points -->
+        {#each rows as rowId, row}
+          <tr>
+            <th>
+              <Token type={rowId} />
+            </th>
+            {#each players as player, playerIndex}
+              <td>
+                <button class="edit" on:click={() => edit(playerIndex, row)}>
+                  {#if isHabitat(rowId)}
+                    {player.points.habitat[rowId]} / {player.points.habitatBonus[rowId]}
+                  {:else if isWildlife(rowId)}
+                    {player.points.wildlife[rowId]}
+                  {:else}
+                    {player.points.natureTokens}
+                  {/if}
+                </button>
+              </td>
+            {/each}
+          </tr>
         {/each}
-      </tr>
-    {/each}
 
-    <!-- Habitat -->
-    {#each HABITAT as habitat}
-      <tr>
-        <th>
-          <Token type={habitat} />
-        </th>
-        {#each players as _, i}
-          <td>
-            <input type="number" bind:value={players[i].points.habitat[habitat]}>
-            <span class="bonus">{players[i].points.habitatBonus[habitat]}</span>
-          </td>
-        {/each}
-      </tr>
-    {/each}
+        <!-- Total -->
+        <tr>
+          <th>
+            Total
+          </th>
+          {#each players as player}
+            <td>
+              <div class="total">{total(player)}</div>
+            </td>
+          {/each}
+        </tr>
 
-    <!-- Nature Tokens -->
-    <tr>
-      <th>
-        <Token type="nature_token" />
-      </th>
-      {#each players as _, i}
-        <td>
-          <input type="number" bind:value={players[i].points.natureTokens}>
-        </td>
-      {/each}
-    </tr>
-
-    <!-- Total -->
-    <tr>
-      <th>
-        Total
-      </th>
-      {#each players as player}
-        <td>
-          {total(player)}
-        </td>
-      {/each}
-    </tr>
-
-  </tbody>
-</table>
+      </tbody>
+    </table>
+  {/if}
+</div>
 
 <!-- Style -->
 <style>
+  #container {
+    background-color: #fffe;
+    border-radius: 24px;
+    padding: 12px;
+    max-width: calc(100% - 24px);
+    overflow: auto;
+    position: relative;
+    width: max-content;
+    text-align: center;
+  }
+  #editor {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
   table {
     border-collapse: collapse;
   }
   td, th {
     padding: 0.5rem;
-    text-align: left;
+    text-align: center;
   }
   .icon {
     text-align: center;
+    color: #222;
   }
   .icon > i {
     font-size: 24px;
@@ -125,16 +182,23 @@
     font-size: 16px;
     border-radius: 3px;
   }
-  input.name {
-    max-width: 128px;
-  }
-  input[type="number"] {
+  input.name,
+  button.edit,
+  .total {
     width: 64px;
+    border-radius: 12px;
+    padding: 6px 12px;
+    border: 1px solid #222;
   }
-  .bonus {
-    padding: 0.5rem;
+  button.edit {
+    cursor: pointer;
   }
-  .bonus::before {
-    content: "Bonus: "
+  .row-name {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+  .point-input {
+    width: 64px;
   }
 </style>

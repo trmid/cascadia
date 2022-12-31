@@ -4,6 +4,12 @@
   export type Wildlife = 'bear' | 'elk' | 'salmon' | 'hawk' | 'fox';
   export const HABITAT: Habitat[] = ['mountain', 'forest', 'prairie', 'wetland', 'river'];
   export type Habitat = 'mountain' | 'forest' | 'prairie' | 'wetland' | 'river';
+  export function isWildlife(id: string): id is Wildlife {
+    return WILDLIFE.includes(id as any);
+  }
+  export function isHabitat(id: string): id is Habitat {
+    return HABITAT.includes(id as any);
+  }
 </script>
 
 <!-- Component -->
